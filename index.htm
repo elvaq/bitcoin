@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>BitCoin</title>
+  <meta charset="UTF-8" />
+  <!responsive web design>
+  <!If browser is not IE9, it need the following js>
+  <script type = "text/javascript" src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+  <script type = "text/javascript" src = "http://fgnass.github.io/spin.js/spin.js"></script>
+  <!script for spinner>
+  <link rel="stylesheet" type="text/css"
+　　　　media="screen and (max-device-width: 400px)"
+　　　　href="tinyScreen.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+	  html{
+	color: #5f5f5f;
+	-webkit-text-size-adjust: 100%;
+	-ms-text-size-adjust: 100%;
+	padding: 0;
+	}
+	body{
+		padding: 0;
+		font: 0.8em "Lato",sans-serif;
+	}
+	.container{
+		width: 90%;
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.showBox{
+		width: 80%;
+		background-color: #ecf0f1;
+		color: #6285A8;
+		padding-bottom: 1%;
+	}
+	.banner{
+		background: 1em 1em #bdc3c7;
+		/*border-radius: 6px 6px 0px 0px;*/
+		border-radius: 0.375em 0.375em 0em 0em;
+		color: #34495E;
+		/*padding: 19px 25px 20px;*/
+		padding: 1.1875em 1.5625em 1.45em;
+	}
+	.bannerContent{
+		width: 90%;
+		height: 2.6em;
+		margin-left: 3%;
+		margin-right: 5%;
+	}
+	.bannerContent h2{
+		width: 30%;
+		float: left;
+		/*margin-left: -5%;*/
+	}
+	.topButton{
+		width:15%;
+		height:20%;
+	}
+	.bannerContent #refresh{
+		float: right;
+		border: none;
+		background-color: red;
+		margin-top: 3%;
+		/*margin-right: 10%;*/
+		/*max-width: 100%;*/
+	}
+	.showContent{
+		text-align: center;;
+	}	
+	.showContent .contentHeading{
+		font-weight: bold;
+	}
+ </style>
+  <script>
+   	var opts = {
+	   	lines:13,
+	   	length:16,
+	   	width:2,
+	   	radius:3,
+	   	corners:200,
+	   	rotate:0,
+	   	direction:1,
+	   	color:'#5882FA',
+	   	speed:1,
+	   	trail:60,
+	   	shadow:false,
+	   	hwaccel:false,
+	   	calssName:'spinner',
+	   	zIndex:2e9,
+	   	top:'auto',
+	   	left:'auto'
+   	}
+   	var spinner = new Spinner(opts);
+    window.addEventListener("load", function() {
+      var button = document.getElementById("connect");
+      var status = document.getElementById("status");
+      var output = document.getElementById("output");
+      var connectTime = document.getElementById("connecttimes");
+      var connect = function () {
+       //document.getElementById("refresh").style.background = "url('
+       //http:
+       //www.standard-icons.comstock-icons/standard-telephone/refresh-icon.gif')";
+        var source = new EventSource("stream");
+        var target = document.getElementById("refresh");
+        //var target = document.getElementsByClassName("refresh");
+        spinner.spin(target);        
+        source.addEventListener("message", function(event) {
+          var _res = JSON.parse(event.data);
+          //Upadate the prices and time
+          document.getElementById("CAD").innerHTML = _res.CAD;
+          document.getElementById("USD").innerHTML = _res.USD; 
+          document.getElementById("CLP").innerHTML = _res.CLP;
+          document.getElementById("time").innerHTML = _res.h+":"+_res.m+":"+_res.s;
+          spinner.spin();
+          //document.getElementById("refresh").style.background = "url('')";
+        }, false);       
+        source.addEventListener("connecttime", function(event) {
+          connectTime.textContent = "Connection was last established at: " + event.data;
+        }, false);
+        source.addEventListener("open", function(event) {
+          document.getElementById("connect").innerHTML = "Disconnect";
+          button.onclick = function(event) {
+            source.close();
+            document.getElementById("connect").innerHTML = "Connect";
+            //button.value = "Connect";
+            button.onclick = connect;
+            status.textContent = "Connection closed!";
+          };
+          status.textContent = "Connection open!";
+        }, false);
+        source.addEventListener("error", function(event) {
+          if (event.target.readyState === EventSource.CLOSED) {
+            source.close();
+            status.textContent = "Connection closed!";
+          } else if (event.target.readyState === EventSource.CONNECTING) {
+            status.textContent = "Connection closed. Attempting to reconnect!";
+          } else {
+            status.textContent = "Connection closed. Unknown error!";
+          }
+        }, false);
+      }
+      
+      if (!!window.EventSource) {
+        connect();
+      } else {
+        button.style.display = "none";
+        status.textContent = "Sorry, your browser doesn't support server-sent events";
+      }
+    }, false);
+  </script>
+</head>
+<body>
+  <button class = "topButton" id="connect">Connect</button>
+  <span id="status">Connection closed!</span><br />
+  <span id="connecttimes"></span><br />
+  <span id="output"></span>
+  <div class="container">
+  		<div class="showBox">
+  			<div class="banner">
+  				<div class="bannerContent">	
+  					<h2>BITCOIN</h2>
+  					<div id = "refresh">
+  					</div>			
+  				</div>
+  			</div>
+  			<div class="showContent">
+				<p><span class="contentHeading">CAD:</span><span id = "CAD" >loading</span></p>
+				<p><span class="contentHeading">USD:</span><span id = "USD"> loading</span></p>
+				<p><span class="contentHeading">CLP:</span><span id = "CLP" >loading</span></p>
+				<p id = "time">loading</p>
+			</div>
+  		</div>
+ </div>
+</body>
+</html>
